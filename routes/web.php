@@ -11,49 +11,79 @@
 |
 */
 
-Route::get('/', function () {
-    return view('pocetna');
-});
+//osnovne strane
+Route::get('/', 'PagesController@getHome');
 
+Route::get('/about', 'PagesController@getAbout');
+
+Route::get('/menu', 'PagesController@getMenu');
+
+Route::get('/gallery', 'PagesController@getGallery');
+
+Route::get('/contact', 'PagesController@getContact');
+Route::get('/reservation', 'PagesController@getReservation');
+
+// ruta za logovanje obicnih korisnika
 Auth::routes();
+Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
 
-//Route::get('/home', 'HomeController@index')->name('home');
+// user rezervacija i porudzbina
+Route::post('/userreservation/submit', 'DashboardController@reservationSubmit');
+Route::get('/user-reservations', 'DashboardController@getUserReservations');
 
-Route::get('/admin', 'AdminController@index')->name('admin')->middleware('admin');
-Route::get('/asistent', 'AsistentController@index')->name('asistent')->middleware('asistent');
-Route::get('/lekar', 'LekarController@index')->name('lekar')->middleware('lekar');
-Route::get('/tester', 'TesterController@index')->name('tester')->middleware('tester');
+Route::post('/usercart/submit', 'DashboardController@orderSubmit');
+Route::get('/user-orders', 'DashboardController@getUserOrders');
 
-Route::resource('roles', 'RoleController')->middleware('admin');
-Route::resource('users', 'UserController')->middleware('admin');
-Route::resource('pacijenti', 'PacijentController')->middleware('asistent');
-Route::resource('lekovi', 'LekController')->middleware('asistent');
-Route::resource('kartoni', 'KartonController')->middleware('lekar');
-Route::resource('dijagnoze', 'DijagnozaController')->middleware('asistent');
+// recepti
+Route::get('/recipes', 'RecipesController@index');
+Route::resource('recipes', 'RecipesController');
+Route::get('/allrecipes', 'RecipesController@allRecipes');
 
-Route::resource('asistentkartoni', 'AsistentController')->middleware('asistent');
-Route::resource('doktorpacijenti', 'LekarController')->middleware('lekar');
+// shop
+Route::resource('product', 'ProductsController');
+Route::get('products', 'ProductsController@index')->name('shop');
+Route::get('/search', 'ProductsController@search');
+Route::get('cart', 'ProductsController@cart');
+Route::get('checkout', 'ProductsController@checkout');
 
-Route::get('/kartoni', 'AsistentController@sviKartoni');
-Route::get('/kartoni/create', 'AsistentController@create');
-Route::post('/kartoni/submit', 'AsistentController@store');
+Route::get('add-to-cart/{id}', 'ProductsController@addToCart');
+Route::get('update-cart', 'ProductsController@update');
+Route::post('remove-from-cart', 'ProductsController@remove');
+
+Route::post('/cart/submit', 'OrdersController@store'); 
+
+// kontakt forma
+Route::resource('messages', 'MessagesController');
+Route::post('/contact/submit', 'MessagesController@submit');
+Route::get('/messages', 'MessagesController@getMessages');
+
+// vesti
+Route::get('/news', 'BlogsController@index');
+Route::resource('news', 'BlogsController');
+
+// komentari na vesti
+Route::resource('blogcomments', 'BlogcommentsController');
+Route::post('blogcomments/{blog_id}', ['uses' => 'BlogcommentsController@store', 'as' => 'comments.store']);
+
+// rezervisanje
+Route::get('/reservations', 'ReservationController@index');
+Route::post('/reservation/submit', 'ReservationController@submit');
+
+// admin panel
+Route::get('/users', 'AdminController@getUsers');
+Route::get('/orders', 'AdminController@getOrders');
+Route::get('/all-user-orders', 'AdminController@getUserOrders');
+Route::get('/all-user-reservations', 'ReservationController@getUserReservations');
+// admin crud na proizvode
+Route::get('/admin-products', 'AdminProductsController@index');
+Route::resource('admin-products', 'AdminProductsController');
+// admin recepti
+Route::resource('admin-recipes', 'AdminRecipesController');
+Route::get('/admin-recipes', 'AdminRecipesController@index');
 
 //admin
-//Route::get('/admin', 'AdminController@index')->name('admin.dashboard'); // imenovanje rute
-//Route::get('/management/login', 'Auth\ManagementLoginController@showLoginForm')->name('management.login');
-//Route::post('/management/login', 'Auth\ManagementLoginController@redirectTo')->name('management.login.submit');
-Route::get('/management/register', 'Auth\ManagementRegisterController@showRegistrationForm')->name('management.register')->middleware('admin');
-Route::post('/management/register', 'Auth\ManagementRegisterController@createManagement')->name('management.register.submit');
-
-
-Route::get('/roles', 'RoleController@index')->name('role.index')->middleware('admin');
-
-Route::get('/searchuser', 'AdminController@searchUser');
-Route::get('/searchdoktorovpacijent', 'LekarController@searchPacijent');
-Route::get('/searchpacijent', 'PacijentController@searchPacijent');
-Route::get('/searchdijagnoza', 'DijagnozaController@searchDijagnoza');
-Route::get('/searchlek', 'AsistentController@searchLek');
-Route::get('/searchkarton', 'AsistentController@searchKarton');
-Route::get('/searchpacijentkarton', 'AsistentController@searchPacijentKarton');
-
-Route::post('/pacijenti/submit', 'PacijentController@store');
+Route::get('/admin', 'AdminController@index')->name('admin.dashboard'); // imenovanje rute
+Route::get('/admin/login', 'Auth\AdminLoginController@showLoginForm')->name('admin.login');
+Route::post('/admin/login', 'Auth\AdminLoginController@login')->name('admin.login.submit');
+Route::get('/admin/register', 'Auth\AdminRegisterController@showRegistrationForm')->name('admin.register');
+Route::post('/admin/register', 'Auth\AdminRegisterController@create')->name('admin.register.submit');
